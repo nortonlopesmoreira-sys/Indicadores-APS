@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Relatório Geral</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --danger-bg: #fee2e2;
+            --danger-text: #991b1b;
+            --warning-bg: #fef08a;
+            --warning-text: #854d0e;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 30px 20px; 
+            color: var(--text-dark); 
+        }
+
+        .container { max-width: 1200px; margin: auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+
+        h1 { font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-dark); }
+        p.subtitle { color: var(--text-muted); margin-top: 5px; font-size: 1rem; }
+
+        .btn-voltar { 
+            display: inline-flex; align-items: center; text-decoration: none; 
+            color: var(--text-muted); font-weight: 500; transition: color 0.2s; font-size: 0.9rem;
+        }
+        .btn-voltar:hover { color: var(--primary); }
+
+        .grid-uploads { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 24px; 
+            margin-bottom: 30px; 
+        }
+
+        .card-upload { 
+            background: var(--surface); padding: 24px; border-radius: 16px; 
+            box-shadow: var(--shadow-md); border: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card-upload:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+        .icon-container {
+            background-color: #f0f9ff; color: var(--primary); padding: 16px; 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .card-upload h4 { font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0; }
+
+        input[type="file"] { display: block; width: 100%; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; }
+        input[type="file"]::file-selector-button {
+            padding: 8px 16px; border-radius: 6px; border: none; background-color: var(--bg-body);
+            color: var(--text-dark); border: 1px solid var(--border); font-weight: 500; 
+            cursor: pointer; transition: all 0.2s; margin-right: 10px; width: 100%; margin-bottom: 10px;
+        }
+        input[type="file"]::file-selector-button:hover { background-color: #e2e8f0; }
+
+        .badge { padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; display: inline-block; }
+        .badge-warning { background-color: var(--warning-bg); color: var(--warning-text); }
+        .badge-success { background-color: var(--success-bg); color: var(--success-text); }
+
+        .botoes-acoes { display: flex; gap: 15px; margin-bottom: 30px; }
+
+        .btn-processar {
+            background-color: var(--primary); color: white; border: none; padding: 16px 32px;
+            border-radius: 12px; font-weight: 600; font-size: 1.1rem; cursor: pointer; 
+            flex: 2; display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: background-color 0.2s, transform 0.1s; box-shadow: var(--shadow-md);
+        }
+        .btn-processar:hover { background-color: var(--primary-hover); transform: scale(0.99); }
+
+        .btn-imprimir {
+            background-color: #475569; color: white; border: none; padding: 16px 32px;
+            border-radius: 12px; font-weight: 600; font-size: 1.1rem; cursor: pointer;
+            flex: 1; display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: background-color 0.2s, transform 0.1s; box-shadow: var(--shadow-md);
+        }
+        .btn-imprimir:hover { background-color: #334155; transform: scale(0.99); }
+
+        /* Estilos dos Resultados */
+        .resultado-section { margin-top: 40px; display: none; }
+        .resultado-section h2 { font-size: 1.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        
+        .kpi-card { 
+            background: var(--surface); padding: 24px; border-radius: 16px; 
+            box-shadow: var(--shadow-sm); border-left: 8px solid var(--border);
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+        }
+        
+        .kpi-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 8px 0; font-weight: 600; }
+        .kpi-value { font-size: 1.8rem; font-weight: 700; margin: 0; }
+        
+        .otimo-border { border-left-color: #3b82f6; } 
+        .text-otimo { color: #3b82f6; }
+        .bom-border { border-left-color: #10b981; } 
+        .text-bom { color: #10b981; }
+        .suficiente-border { border-left-color: #eab308; } 
+        .text-suficiente { color: #eab308; }
+        .regular-border { border-left-color: #f97316; } 
+        .text-regular { color: #f97316; }
+        .ausente-border { border-left-color: #ef4444; } 
+        .text-ausente { color: #ef4444; }
+
+        .classificacao-tag {
+            margin-top: 10px; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+            background-color: var(--bg-body); border: 1px solid currentColor;
+        }
+
+        /* Seção de Feedback Técnico Dinâmico */
+        .feedback-section { margin-top: 30px; }
+        .feedback-card {
+            background: var(--surface); padding: 20px; border-radius: 12px;
+            border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow-sm);
+        }
+        .feedback-card h4 { margin: 0; font-size: 1.1rem; font-weight: 600; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        
+        .gargalo-destaque {
+            background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+            padding: 12px; border-radius: 8px; font-size: 0.95rem; margin: 15px 0; font-weight: 500;
+        }
+
+        .feedback-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .feedback-block { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e1; }
+        .feedback-block.negativo { border-left-color: #ef4444; }
+        .feedback-block.melhorar { border-left-color: #0ea5e9; }
+        .feedback-block h5 { margin: 0 0 8px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.02em; color: var(--text-muted); }
+        .feedback-block p { margin: 0; font-size: 0.95rem; line-height: 1.5; color: #334155; }
+
+        @media print {
+            body { background: white; color: black; padding: 0; margin: 0; }
+            .container { max-width: 100%; width: 100%; }
+            .header, #areaInputs, .botoes-acoes { display: none !important; }
+            .resultado-section { display: block !important; margin-top: 0; }
+            .kpi-card { page-break-inside: avoid; border: 1px solid #cbd5e1 !important; border-left: 8px solid #cbd5e1 !important; margin-bottom: 10px; }
+            .feedback-card { page-break-inside: avoid; border: 1px solid #cbd5e1 !important; margin-bottom: 20px; }
+            .gargalo-destaque { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: black !important; }
+            .feedback-block { background: #fdfdfd !important; border: 1px solid #e2e8f0; }
+        }
+        @media (max-width: 768px) {
+            .feedback-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>Relatório Geral de Desempenho</h1>
+            <p class="subtitle">Faça o upload das planilhas para gerar a média e extrair o gargalo de cada indicador.</p>
+        </div>
+        <a href="index.html" class="btn-voltar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Voltar ao Início
+        </a>
+    </div>
+
+    <div class="grid-uploads" id="areaInputs">
+        <div class="card-upload">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.91.05L12 20V4.5Z"/><path d="M16 11v9"/><path d="M19 11v9"/><path d="M16 14h3"/></svg>
+            </div>
+            <h4>Ind. 2 - Desenvolvimento Infantil</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(2, this)">
+            <span class="badge badge-warning" id="status-2">Aguardando Arquivo</span>
+        </div>
+
+        <div class="card-upload">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </div>
+            <h4>Ind. 3 - Gestante e Puérpera</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(3, this)">
+            <span class="badge badge-warning" id="status-3">Aguardando Arquivo</span>
+        </div>
+
+        <div class="card-upload">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <h4>Ind. 4 - Pessoa com Diabetes</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(4, this)">
+            <span class="badge badge-warning" id="status-4">Aguardando Arquivo</span>
+        </div>
+
+        <div class="card-upload">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <h4>Ind. 5 - Pessoa com Hipertensão</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(5, this)">
+            <span class="badge badge-warning" id="status-5">Aguardando Arquivo</span>
+        </div>
+
+        <div class="card-upload">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M20 21H4"/><path d="M12 21v-3"/><path d="M10 18h4"/></svg>
+            </div>
+            <h4>Ind. 7 - Câncer na Mulher</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(7, this)">
+            <span class="badge badge-warning" id="status-7">Aguardando Arquivo</span>
+        </div>
+    </div>
+
+    <div class="botoes-acoes">
+        <button class="btn-processar" onclick="gerarRelatorio()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            Processar Relatório e Feedback
+        </button>
+        <button class="btn-imprimir" onclick="window.print()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Imprimir Feedback
+        </button>
+    </div>
+    
+    <div id="resultadoFinal" class="resultado-section">
+        <h2>Médias e Classificações por Indicador</h2>
+        <div id="listaResultados" class="kpi-container"></div>
+
+        <h2>Relatório Qualitativo (Foco nos Gargalos Específicos)</h2>
+        <div id="listaFeedback" class="feedback-section"></div>
+    </div>
+</div>
+
+<script>
+    // Dicionário de Metas e Feedbacks Específicos para extração dinâmica
+    const dicIndicadores = {
+        2: {
+            nome: "Desenvolvimento Infantil",
+            metas: [
+                { nome: '1ª Consulta < 30 dias', validar: r => (r['M'] === 'S' || r['M'] === 'SIM'), neg: 'Atraso crítico na captação precoce de recém-nascidos para a primeira avaliação.', melh: 'Estruturar fluxo de aviso de alta com a maternidade e acionar busca ativa na primeira semana de vida.' },
+                { nome: '09 Consultas Puericultura', validar: r => parseInt(r['N']) >= 9, neg: 'Baixa adesão ou quebra de continuidade no calendário de puericultura.', melh: 'Instituir o agendamento programado das próximas consultas na própria recepção antes da saída do paciente.' },
+                { nome: 'Peso e Altura (≥9)', validar: r => parseInt(r['O']) >= 9, neg: 'Subnotificação sistêmica de antropometria.', melh: 'Cobrar da equipe de enfermagem/triagem o registro obrigatório de peso e altura no prontuário eletrônico em todas as visitas.' },
+                { nome: 'Visitas ACS', validar: r => (r['P'] === 'S' || r['P'] === 'SIM') && (r['Q'] === 'S' || r['Q'] === 'SIM'), neg: 'Baixa cobertura de visitas domiciliares focadas na primeira infância.', melh: 'Mapear as crianças menores de 2 anos por microárea e exigir cumprimento de cronograma dos Agentes de Saúde.' },
+                { nome: 'Vacinação Completa', validar: r => ['S','T','U','V','W'].every(c => r[c] === 'S' || r[c] === 'SIM'), neg: 'Falha no acompanhamento ou registro do calendário vacinal infantil básico.', melh: 'Integrar os registros da sala de vacina ao prontuário médico e gerar relatórios mensais de faltosos para o ACS.' }
+            ]
+        },
+        3: {
+            nome: "Gestante e Puérpera",
+            metas: [
+                { nome: '1ª Consulta < 12sem', validar: r => (r['L'] === 'S' || r['L'] === 'SIM'), neg: 'Início tardio do pré-natal prejudicando a janela de exames essenciais.', melh: 'Garantir agendamento imediato (vaga zero) para consulta médica/enfermagem após confirmação de teste de gravidez.' },
+                { nome: 'Consultas Médicas (≥7)', validar: r => parseInt(r['M']) >= 7, neg: 'Alto absenteísmo durante o percurso gestacional.', melh: 'Monitoramento contínuo da caderneta da gestante; acionar equipe para busca ativa na primeira falta injustificada.' },
+                { nome: 'Exames e Vacinas Base', validar: r => ['R','S','T','U','V','W','X'].every(c => r[c] === 'S' || r[c] === 'SIM'), neg: 'Quebra na linha de cuidados e subnotificação severa de testes rápidos (Sífilis/HIV/Hep).', melh: 'Descentralizar os testes rápidos para a equipe de enfermagem já na primeira consulta de abertura do pré-natal.' },
+                { nome: 'Atendimento Puerpério', validar: r => (r['Y'] === 'S' || r['Y'] === 'SIM') && (r['Z'] === 'S' || r['Z'] === 'SIM'), neg: 'Grave descontinuidade de assistência à mulher após o parto.', melh: 'Criar vínculo administrativo entre as altas da maternidade municipal e a coordenação da UBS para agendamento automático.' },
+                { nome: 'Odontologia', validar: r => (r['AA'] === 'S' || r['AA'] === 'SIM'), neg: 'Baixo ou nulo encaminhamento da gestante para avaliação de saúde bucal.', melh: 'Inserir a consulta odontológica como requisito obrigatório de fluxo no 1º ou 2º trimestre gestacional.' }
+            ]
+        },
+        4: {
+            nome: "Pessoa com Diabetes",
+            metas: [
+                { nome: 'Consulta Semestral', validar: r => (r['L'] === 'S' || r['L'] === 'SIM'), neg: 'Diabéticos circulando na rede apenas para pegar medicação, sem avaliação clínica recente.', melh: 'Vincular obrigatoriamente a liberação de medicamentos de uso contínuo na farmácia à validade da consulta médica.' },
+                { nome: 'Pressão e Peso', validar: r => (r['M'] === 'S' || r['M'] === 'SIM') && parseInt(r['N']) >= 1, neg: 'Exame físico básico negligenciado durante os acompanhamentos.', melh: 'Tornar a passagem pela sala de triagem obrigatória para pacientes crônicos antes de qualquer atendimento.' },
+                { nome: 'Visitas Domiciliares', validar: r => parseInt(r['O']) >= 2 || r['O'] === '2+', neg: 'O monitoramento domiciliar de crônicos pelos ACS está abaixo do esperado.', melh: 'Direcionar as visitas do ACS especificamente para pacientes estratificados como alto risco ou não compensados.' },
+                { nome: 'Hemoglobina Glicada', validar: r => (r['P'] === 'S' || r['P'] === 'SIM'), neg: 'Ausência crônica de monitoramento do controle glicêmico (HbA1c).', melh: 'Organizar mutirões de coleta laboratorial na própria UBS ou garantir cota fixa mensal para pacientes do Hiperdia.' },
+                { nome: 'Exame do Pé Diabético', validar: r => (r['Q'] === 'S' || r['Q'] === 'SIM'), neg: 'Alto risco de complicações severas por falta de avaliação preventiva de membros inferiores.', melh: 'Capacitar a enfermagem para realizar e registrar o teste de sensibilidade do pé diabético na rotina.' }
+            ]
+        },
+        5: {
+            nome: "Pessoa com Hipertensão",
+            metas: [
+                { nome: 'Consulta Semestral', validar: r => (r['L'] === 'S' || r['L'] === 'SIM'), neg: 'Acompanhamento clínico irregular de pacientes hipertensos cadastrados.', melh: 'Estabelecer agendas em bloco (turnos dedicados) exclusivamente para renovação e controle do Hiperdia.' },
+                { nome: 'Aferição de PA e Peso', validar: r => parseInt(r['M']) >= 1 && (r['O'] === 'S' || r['O'] === 'SIM'), neg: 'Falha grave no registro da Pressão Arterial, dado central do indicador.', melh: 'Incentivar que os ACS realizem aferições supervisionadas nas residências e anotem devidamente para inclusão no prontuário.' },
+                { nome: 'Visitas ACS', validar: r => parseInt(r['N']) >= 2, neg: 'Ausência de vigilância primária e visitas inconstantes aos domicílios.', melh: 'Cobrar planejamento territorial dos ACS priorizando pacientes hipertensos que faltaram às últimas consultas.' }
+            ]
+        },
+        7: {
+            nome: "Câncer na Mulher",
+            metas: [
+                { nome: 'Exame Citopatológico', validar: r => (r['F'] === 'S' || r['F'] === 'SIM'), neg: 'Baixíssima cobertura populacional para rastreamento de colo de útero.', melh: 'Gerar listas nominais via e-SUS de mulheres com preventivo atrasado e ofertar horários alternativos (terceiro turno).' },
+                { nome: 'Mamografia', validar: r => (r['I'] === 'S' || r['I'] === 'SIM'), neg: 'Mulheres na faixa de risco estão sem solicitação ou execução de mamografia.', melh: 'Eliminar barreiras de agendamento; a equipe de enfermagem deve ser autorizada a protocolar solicitações em massa.' },
+                { nome: 'Saúde/Vacina HPV', validar: r => (r['G'] === 'S' || r['G'] === 'SIM') && (r['H'] === 'S' || r['H'] === 'SIM'), neg: 'Déficit na promoção de educação em saúde sexual e prevenção primária (HPV).', melh: 'Organizar palestras na sala de espera e fortalecer ações integradas com escolas da microárea.' }
+            ]
+        }
+    };
+
+    const dadosCarregados = {};
+    const indicadores = [2, 3, 4, 5, 7];
+
+    function carregarArquivo(id, input) {
+        const file = input.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type: 'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: "A", defval: ""});
+            const lista = rows.slice(1).filter(r => r['A'] && r['A'].toString().trim() !== "");
+            
+            if(lista.length === 0) {
+                alert(`Nenhum dado encontrado na planilha do Indicador ${id}`);
+                return;
+            }
+
+            let somaTotal = 0;
+            let analiseMetas = {};
+
+            // Inicializa a contagem individual para descobrir o gargalo
+            dicIndicadores[id].metas.forEach(m => analiseMetas[m.nome] = 0);
+
+            lista.forEach(r => {
+                // Cálculo exato das médias gerais para o painel de notas
+                somaTotal += calcularPontos(r, id);
+
+                // Verificação de sucesso para descobrir o maior Gargalo
+                dicIndicadores[id].metas.forEach(m => {
+                    if(m.validar(r)) {
+                        analiseMetas[m.nome]++;
+                    }
+                });
+            });
+
+            // Encontrar o pior desempenho (Menor % de sucesso)
+            let piorPorcentagem = 101;
+            let piorMetaObj = null;
+
+            dicIndicadores[id].metas.forEach(m => {
+                let pct = (analiseMetas[m.nome] / lista.length) * 100;
+                if(pct < piorPorcentagem) {
+                    piorPorcentagem = pct;
+                    piorMetaObj = m;
+                }
+            });
+
+            dadosCarregados[id] = {
+                media: (somaTotal / lista.length).toFixed(1),
+                piorMeta: piorMetaObj,
+                pctPiorMeta: piorPorcentagem.toFixed(1)
+            };
+
+            const badge = document.getElementById(`status-${id}`);
+            badge.textContent = "Planilha Carregada";
+            badge.className = "badge badge-success";
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function calcularPontos(r, id) {
+        // Função original preservada para garantir a exatidão das médias
+        const checkStr = (val) => val === 'S' || val === 'SIM';
+        switch(id) {
+            case 2:
+                const m2_1 = checkStr(r['M']?.toString().toUpperCase());
+                const m2_2 = (parseInt(r['N']) >= 9);
+                const m2_3 = (parseInt(r['O']) >= 9);
+                const m2_4 = checkStr(r['P']?.toString().toUpperCase()) && checkStr(r['Q']?.toString().toUpperCase());
+                const m2_5 = (['S','T','U','V','W'].every(c => checkStr(r[c]?.toString().toUpperCase())));
+                return (m2_1?20:0) + (m2_2?20:0) + (m2_3?20:0) + (m2_4?20:0) + (m2_5?20:0);
+            case 3:
+                let pts3 = 0;
+                if(checkStr(r['L']?.toString().toUpperCase())) pts3 += 9;
+                if(parseInt(r['M']) >= 7) pts3 += 10;
+                if(parseInt(r['N']) >= 7) pts3 += 9;
+                if(parseInt(r['O']) >= 7) pts3 += 9;
+                if(parseInt(r['Q']) >= 3) pts3 += 9;
+                ['R','S','T','U','V','W','X','Y','Z','AA'].forEach(c => {
+                    if(checkStr(r[c]?.toString().toUpperCase())) pts3 += 9;
+                });
+                return Math.min(pts3, 100);
+            case 4:
+                const m4_1 = checkStr(r['L']?.toString().toUpperCase());
+                const m4_2 = checkStr(r['M']?.toString().toUpperCase());
+                const m4_3 = (parseInt(r['O']) >= 2 || r['O'] === '2+');
+                const m4_4 = (parseInt(r['N']) >= 1);
+                const m4_5 = checkStr(r['P']?.toString().toUpperCase());
+                const m4_6 = checkStr(r['Q']?.toString().toUpperCase());
+                return (m4_1?20:0) + (m4_2?15:0) + (m4_3?20:0) + (m4_4?15:0) + (m4_5?15:0) + (m4_6?15:0);
+            case 5:
+                const m5_1 = checkStr(r['L']?.toString().toUpperCase());
+                const m5_2 = (parseInt(r['M']) >= 1);
+                const m5_3 = (parseInt(r['N']) >= 2);
+                const m5_4 = checkStr(r['O']?.toString().toUpperCase());
+                return (m5_1?25:0) + (m5_2?25:0) + (m5_3?25:0) + (m5_4?25:0);
+            case 7:
+                const m7_1 = checkStr(r['F']?.toString().toUpperCase());
+                const m7_2 = checkStr(r['G']?.toString().toUpperCase());
+                const m7_3 = checkStr(r['H']?.toString().toUpperCase());
+                const m7_4 = checkStr(r['I']?.toString().toUpperCase());
+                return (m7_1?20:0) + (m7_2?30:0) + (m7_3?30:0) + (m7_4?20:0);
+            default: return 0;
+        }
+    }
+
+    function obterClassificacao(nota) {
+        if (nota > 75 && nota <= 100) return { rotulo: "Ótimo", classeBorda: "otimo-border", classeTexto: "text-otimo" };
+        if (nota > 50 && nota <= 75) return { rotulo: "Bom", classeBorda: "bom-border", classeTexto: "text-bom" };
+        if (nota > 25 && nota <= 50) return { rotulo: "Suficiente", classeBorda: "suficiente-border", classeTexto: "text-suficiente" };
+        if (nota <= 25) return { rotulo: "Regular", classeBorda: "regular-border", classeTexto: "text-regular" };
+        return { rotulo: "Inválido", classeBorda: "ausente-border", classeTexto: "text-ausente" };
+    }
+
+    function gerarRelatorio() {
+        const divRes = document.getElementById('listaResultados');
+        const divFeed = document.getElementById('listaFeedback');
+        divRes.innerHTML = '';
+        divFeed.innerHTML = '';
+        
+        if(Object.keys(dadosCarregados).length === 0) {
+            alert("Por favor, faça o upload de pelo menos uma planilha antes de processar.");
+            return;
+        }
+
+        document.getElementById('resultadoFinal').style.display = 'block';
+
+        indicadores.forEach(i => {
+            const indDados = dadosCarregados[i];
+            const subtitulo = dicIndicadores[i].nome;
+            
+            if (indDados) {
+                const media = parseFloat(indDados.media);
+                const infoClassificacao = obterClassificacao(media);
+                const piorMeta = indDados.piorMeta;
+                const pct = indDados.pctPiorMeta;
+                
+                // Card de Nota
+                divRes.innerHTML += `
+                    <div class="kpi-card ${infoClassificacao.classeBorda}">
+                        <h4 class="kpi-title">Indicador ${i}<br><span style="font-size:0.7rem; font-weight:400; text-transform:none; color: var(--text-muted);">${subtitulo}</span></h4>
+                        <p class="kpi-value ${infoClassificacao.classeTexto}">${media} pts</p>
+                        <span class="classificacao-tag ${infoClassificacao.classeTexto}">${infoClassificacao.rotulo}</span>
+                    </div>
+                `;
+
+                // Card de Feedback baseado no Excel real
+                divFeed.innerHTML += `
+                    <div class="feedback-card">
+                        <h4>
+                            <span>Indicador ${i} - ${subtitulo}</span>
+                            <span class="${infoClassificacao.classeTexto}" style="font-size:0.95rem;">Média: ${media} pts</span>
+                        </h4>
+                        
+                        <div class="gargalo-destaque">
+                            ⚠️ <strong>Ponto Crítico de Atenção na Unidade:</strong> A meta referente a <u>${piorMeta.nome}</u> obteve o pior índice de sucesso da planilha, com apenas <strong>${pct}%</strong> de aderência dos pacientes.
+                        </div>
+
+                        <div class="feedback-grid">
+                            <div class="feedback-block negativo">
+                                <h5>Diagnóstico do Problema</h5>
+                                <p>${piorMeta.neg}</p>
+                            </div>
+                            <div class="feedback-block melhorar">
+                                <h5>Plano de Ação Sugerido</h5>
+                                <p>${piorMeta.melh}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                divRes.innerHTML += `
+                    <div class="kpi-card ausente-border">
+                        <h4 class="kpi-title">Indicador ${i}<br><span style="font-size:0.7rem; font-weight:400; text-transform:none; color: var(--text-muted);">${subtitulo}</span></h4>
+                        <p class="kpi-value text-ausente">Ausente</p>
+                        <span class="classificacao-tag text-ausente" style="border: none; background: transparent; padding:0; margin-top:10px;">Sem dados</span>
+                    </div>
+                `;
+            }
+        });
+
+        document.getElementById('resultadoFinal').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+</script>
+</body>
+</html>

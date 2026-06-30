@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Indicador 2</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --danger-bg: #fee2e2;
+            --danger-text: #991b1b;
+            --warning-bg: #fef08a;
+            --warning-text: #854d0e;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 30px 20px; 
+            color: var(--text-dark); 
+        }
+
+        .container { max-width: 1400px; margin: auto; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+
+        h1 { font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--text-dark); }
+        
+        .unidade-destaque {
+            font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-top: 5px; display: none;
+        }
+
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+
+        .btn-voltar { 
+            display: inline-flex; align-items: center; text-decoration: none; 
+            color: var(--text-muted); font-weight: 500; transition: color 0.2s; font-size: 0.9rem;
+        }
+        .btn-voltar:hover { color: var(--primary); }
+
+        .btn-imprimir {
+            background-color: #059669; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: background-color 0.2s; font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-imprimir:hover { background-color: #057a57; }
+
+        .upload-section { 
+            background: var(--surface); text-align: center; margin-bottom: 30px; 
+            padding: 40px 20px; border: 2px dashed var(--border); border-radius: 12px; 
+            transition: border-color 0.3s; box-shadow: var(--shadow-sm);
+        }
+        .upload-section:hover { border-color: var(--primary); }
+        .upload-title { font-size: 1.1rem; font-weight: 600; margin-top: 0; margin-bottom: 15px; }
+
+        input[type="file"] { display: block; margin: 0 auto; font-size: 0.9rem; color: var(--text-muted); }
+        input[type="file"]::file-selector-button {
+            padding: 10px 20px; border-radius: 8px; border: none; background-color: var(--primary);
+            color: white; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-right: 15px;
+        }
+        input[type="file"]::file-selector-button:hover { background-color: var(--primary-hover); }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 24px; display: none; }
+
+        .card { 
+            background: var(--surface); padding: 24px; border-radius: 16px; 
+            box-shadow: var(--shadow-md); border: 1px solid var(--border); 
+        }
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+
+        .kpi-container { display: flex; gap: 24px; }
+        .kpi-card { 
+            flex: 1; background: var(--surface); padding: 24px; border-radius: 16px; 
+            box-shadow: var(--shadow-md); border: 1px solid var(--border); border-left: 6px solid var(--primary);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .kpi-card.success-border { border-left-color: #10b981; }
+        .kpi-title { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 8px 0; font-weight: 600; }
+        .kpi-value { font-size: 2rem; font-weight: 700; margin: 0; }
+        .text-primary { color: var(--primary); }
+        .text-success { color: #10b981; }
+
+        .chart-container { width: 100%; height: 380px; position: relative; }
+
+        /* Blocos de Feedback */
+        .meta-feedback-item {
+            border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;
+            background: var(--surface); box-shadow: var(--shadow-sm); page-break-inside: avoid;
+        }
+        .meta-feedback-header {
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px;
+        }
+        .meta-feedback-title { font-size: 1.05rem; font-weight: 600; color: var(--text-dark); }
+        
+        .feedback-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .feedback-block { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e1; }
+        .feedback-block.negativo { border-left-color: #ef4444; }
+        .feedback-block.melhorar { border-left-color: #0ea5e9; }
+        .feedback-block.sucesso { border-left-color: #10b981; }
+        
+        .feedback-block h5 { margin: 0 0 8px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.02em; color: var(--text-muted); }
+        .feedback-block p { margin: 0; font-size: 0.95rem; line-height: 1.5; color: #334155; }
+
+        /* Tabela Nominal */
+        .table-wrapper { 
+            overflow-x: auto; overflow-y: auto; max-height: 500px; 
+            border: 1px solid var(--border); border-radius: 12px; background: var(--surface); 
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; min-width: 1200px; }
+        th, td { padding: 14px 18px; text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; position: sticky; top: 0; z-index: 10; }
+        td:first-child, th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 11; font-weight: 500; }
+
+        .badge { padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; display: inline-block; }
+        .badge-success { background-color: var(--success-bg); color: var(--success-text); }
+        .badge-danger { background-color: var(--danger-bg); color: var(--danger-text); }
+        .badge-warning { background-color: var(--warning-bg); color: var(--warning-text); }
+        .score-destaque { font-size: 0.9rem; color: var(--text-dark); }
+
+        /* Elemento exclusivo estruturado para o Topo da Impressão Física */
+        .cabecalho-impressao-exclusivo {
+            display: none;
+        }
+
+        /* Regras de Impressão Limpa */
+        @media print {
+            body { background-color: #fff; padding: 0; margin: 0; }
+            .container { max-width: 100%; box-shadow: none; }
+            
+            /* Esconde controles da tela */
+            .header, .upload-section, #cardTabela { display: none !important; }
+            
+            /* Ativa e estiliza o cabeçalho oficial no topo do papel */
+            .cabecalho-impressao-exclusivo {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 35px;
+                border-bottom: 3px double #0f172a;
+                padding-bottom: 15px;
+            }
+            .cabecalho-impressao-exclusivo h1 { font-size: 1.6rem; margin: 0; font-weight: 700; color: #0f172a; text-transform: uppercase; }
+            .cabecalho-impressao-exclusivo h2 { font-size: 1.15rem; margin: 5px 0 15px 0; font-weight: 500; color: #475569; }
+            .cabecalho-impressao-exclusivo .box-unidade {
+                font-size: 1.3rem; font-weight: 700; background-color: #f1f5f9 !important; 
+                padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; display: inline-block; margin-top: 5px;
+            }
+            
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .card, .kpi-card, .meta-feedback-item { border: 1px solid #cbd5e1 !important; box-shadow: none !important; break-inside: avoid; margin-bottom: 20px; }
+            .feedback-block { background: #fdfdfd !important; border: 1px solid #e2e8f0 !important; }
+            .chart-container { height: 360px; }
+            
+            @page { margin: 1.5cm; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Estrutura de Cabeçalho do PDF/Impressora -->
+<div class="cabecalho-impressao-exclusivo">
+    <h1>Relatório de Auditoria e Desempenho</h1>
+    <h2>Indicador 2 – Desenvolvimento Infantil</h2>
+    <div class="box-unidade">🏢 Unidade/Equipe: <span id="nomeUnidadePrint"></span></div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>Painel do Indicador 2 – Desenvolvimento Infantil</h1>
+            <div class="unidade-destaque" id="areaUnidade">🏢 Unidade Analisada: <span id="nomeUnidade"></span></div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-imprimir" id="btnImprimir" onclick="dispararImpressao()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Imprimir Gráficos e Feedbacks
+            </button>
+            <a href="index.html" class="btn-voltar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Voltar ao Início
+            </a>
+        </div>
+    </div>
+    
+    <div class="upload-section">
+        <h3 class="upload-title">Análise de Dados por Unidade</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Insira a planilha deste indicador para auditar as notas e gerar os planos de ação de cada critério.</p>
+        <input type="file" id="inputExcel" accept=".xlsx, .xls, .csv">
+    </div>
+
+    <div class="dashboard-grid" id="dashboard">
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h4 class="kpi-title">Total de Crianças Analisadas</h4>
+                <p id="kpiTotal" class="kpi-value text-primary">0</p>
+            </div>
+            <div class="kpi-card success-border">
+                <h4 class="kpi-title">Média Geral da Unidade</h4>
+                <p id="kpiMedia" class="kpi-value text-success">0 pts</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Gráfico de Cumprimento de Metas</h3>
+            <div class="chart-container">
+                <canvas id="graficoMetas"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Auditoria e Planos de Ação por Critério</h3>
+            <div id="containerFeedbackCompleto"></div>
+        </div>
+
+        <div class="card" id="cardTabela" style="padding: 0; overflow: hidden;">
+            <div style="padding: 24px 24px 0 24px;">
+                <h3 class="card-title" style="border:none; margin:0;">Lista Detalhada de Pontuação Nominal</h3>
+            </div>
+            <div class="table-wrapper" style="border: none; border-radius: 0; border-top: 1px solid var(--border); margin-top:15px;">
+                <table id="tabelaPacientes">
+                    <thead>
+                        <tr id="cabecalhoTabela"></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    Chart.register(ChartDataLabels);
+
+    const regetasCampos = [
+        { 
+            id: 'M', exibeColuna: 'M', nome: '1ª Consulta < 30 dias', pontos: 20, 
+            validar: (v) => v === 'S' || v === 'SIM',
+            neg: 'Atraso na captação precoce de recém-nascidos para a primeira avaliação clínica.',
+            melh: 'Estruturar canal ágil de aviso de alta com as maternidades locais e programar busca ativa imediata na primeira semana de vida.'
+        },
+        { 
+            id: 'N', exibeColuna: 'N', nome: '09 Consultas < 2 anos', pontos: 20, 
+            validar: (v) => !isNaN(parseInt(v)) && parseInt(v) >= 9,
+            neg: 'Perda de seguimento ou quebra no cronograma padrão de consultas programadas de puericultura.',
+            melh: 'Garantir o agendamento fixo da consulta subsequente no balcão de recepção antes da saída da mãe da unidade.'
+        },
+        { 
+            id: 'O', exibeColuna: 'O', nome: '09 Registros Peso/Altura', pontos: 20, 
+            validar: (v) => !isNaN(parseInt(v)) && parseInt(v) >= 9,
+            neg: 'Falta de registro ou omissão da coleta de dados antropométricos durante os atendimentos de rotina.',
+            melh: 'Tornar a pesagem e a medição de estatura etapas mandatórias no acolhimento/triagem de enfermagem para todo menor de 2 anos.'
+        },
+        { 
+            id: 'PQ', exibeColuna: 'P e Q', nome: '02 Visitas Domiciliares ACS', pontos: 20, 
+            validar: (v, paciente) => {
+                let pVal = paciente['P'] ? paciente['P'].toString().trim().toUpperCase() : "";
+                let qVal = paciente['Q'] ? paciente['Q'].toString().trim().toUpperCase() : "";
+                return (pVal === 'S' || pVal === 'SIM') && (qVal === 'S' || qVal === 'SIM');
+            },
+            neg: 'Insuficiência de visitas domiciliares focadas na vigilância e acompanhamento da primeira infância.',
+            melh: 'Disponibilizar relatórios territoriais mensais aos ACS mapeando crianças menores de 2 anos com visitas em atraso.'
+        },
+        { 
+            id: 'VAC', exibeColuna: 'S a W', nome: 'Esquema Vacinal Completo', pontos: 20, 
+            validar: (v, paciente) => {
+                return ['S','T','U','V','W'].every(col => {
+                    let val = paciente[col] ? paciente[col].toString().trim().toUpperCase() : "";
+                    return (val === 'S' || val === 'SIM');
+                });
+            },
+            neg: 'Atrasos vacinais acumulados ou ausência de monitoramento preventivo da carteira de vacinação.',
+            melh: 'Realizar mutirões de atualização vacinal na unidade e criar alertas no prontuário eletrônico para crianças com pendências na imunização.'
+        }
+    ];
+
+    let chartInstancia = null;
+    let planilhaCarregada = false;
+
+    document.getElementById('inputExcel').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, {header: "A", defval: ""});
+            processarDados(rows);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function dispararImpressao() {
+        if (!planilhaCarregada) {
+            alert("⚠️ Não há dados para imprimir! Por favor, faça o upload da planilha Excel primeiro para identificar a unidade.");
+            return;
+        }
+        window.print();
+    }
+
+    function processarDados(rows) {
+        const pacientes = rows.filter((row, index) => index > 0 && row['A'] && row['A'].toString().trim() !== "");
+        const totalPacientes = pacientes.length;
+        
+        if (totalPacientes === 0) {
+            alert("Nenhum dado válido de paciente foi encontrado.");
+            return;
+        }
+
+        // CAPTURA DO NOME DA EQUIPE (Coluna H da linha 2)
+        let nomeEquipe = "Unidade Não Identificada";
+        if (pacientes[0]['H'] && pacientes[0]['H'].toString().trim() !== "") {
+            nomeEquipe = pacientes[0]['H'].toString().trim();
+        }
+        
+        // Alimenta o topo do painel e o cabeçalho oculto de impressão
+        document.getElementById('nomeUnidade').innerText = nomeEquipe;
+        document.getElementById('nomeUnidadePrint').innerText = nomeEquipe;
+        document.getElementById('areaUnidade').style.display = 'block';
+
+        let contagemAtingimento = {};
+        regetasCampos.forEach(m => contagemAtingimento[m.id] = 0);
+
+        let somaPontuacoesGerais = 0;
+        const dadosTabela = [];
+
+        pacientes.forEach(p => {
+            let pontuacaoPaciente = 0;
+            let statusMetas = {};
+
+            regetasCampos.forEach(meta => {
+                let valorCelula = p[meta.id] ? p[meta.id].toString().trim().toUpperCase() : "";
+                
+                if (meta.validar(valorCelula, p)) {
+                    pontuacaoPaciente += meta.pontos;
+                    contagemAtingimento[meta.id]++;
+                    statusMetas[meta.id] = { atingiu: true, pontosGanhos: meta.pontos };
+                } else {
+                    statusMetas[meta.id] = { atingiu: false, pontosGanhos: 0 };
+                }
+            });
+
+            if (pontuacaoPaciente > 100) pontuacaoPaciente = 100;
+            somaPontuacoesGerais += pontuacaoPaciente;
+
+            dadosTabela.push({
+                nome: p['A'].toString().trim(),
+                pontos: pontuacaoPaciente,
+                status: statusMetas
+            });
+        });
+
+        const mediaGeral = (somaPontuacoesGerais / totalPacientes).toFixed(1);
+        document.getElementById('kpiTotal').innerText = totalPacientes;
+        document.getElementById('kpiMedia').innerText = `${mediaGeral} pts`;
+
+        const containerFeedback = document.getElementById('containerFeedbackCompleto');
+        containerFeedback.innerHTML = '';
+
+        regetasCampos.forEach(meta => {
+            let pct = ((contagemAtingimento[meta.id] / totalPacientes) * 100).toFixed(1);
+            
+            let classeBadge = "";
+            let textoStatus = "";
+            let diagTexto = "";
+            let acaoTexto = "";
+            let classeBlocoDestaque = "";
+
+            if (pct >= 75) {
+                classeBadge = "badge-success";
+                textoStatus = "Desempenho Adequado";
+                classeBlocoDestaque = "sucesso";
+                diagTexto = `Excelente cobertura identificada nos dados extraídos (${pct}%). O fluxo assistencial de atendimento e registro está funcionando de forma eficiente na unidade.`;
+                acaoTexto = "Manter o monitoramento por amostragem mensal e parabenizar a equipe de saúde pelo engajamento na manutenção deste indicador.";
+            } else if (pct >= 50) {
+                classeBadge = "badge-warning";
+                textoStatus = "Alerta / Necessita Atenção";
+                classeBlocoDestaque = "melhorar";
+                diagTexto = `Atingimento parcial verificado (${pct}%). ${meta.neg}`;
+                acaoTexto = `Reforçar processos estruturais da unidade: ${meta.melh}`;
+            } else {
+                classeBadge = "badge-danger";
+                textoStatus = "Crítico / Intervenção Urgente";
+                classeBlocoDestaque = "negativo";
+                diagTexto = `Grave gargalo operacional constatado na planilha (${pct}% de conformidade). ${meta.neg}`;
+                acaoTexto = `Ação imediata recomendada: ${meta.melh}`;
+            }
+
+            containerFeedback.innerHTML += `
+                <div class="meta-feedback-item">
+                    <div class="meta-feedback-header">
+                        <div class="meta-feedback-title">🎯 Meta: <strong>${meta.nome}</strong> (Col. ${meta.exibeColuna})</div>
+                        <div>
+                            <span class="badge" style="background:#f1f5f9; color:var(--text-dark); margin-right:8px;">Sucesso: ${pct}%</span>
+                            <span class="badge ${classeBadge}">${textoStatus}</span>
+                        </div>
+                    </div>
+                    <div class="feedback-grid">
+                        <div class="feedback-block ${classeBlocoDestaque === 'sucesso' ? 'sucesso' : 'negativo'}">
+                            <h5>Diagnóstico Situacional</h5>
+                            <p>${diagTexto}</p>
+                        </div>
+                        <div class="feedback-block melhorar">
+                            <h5>Plano de Intervenção e Ação</h5>
+                            <p>${acaoTexto}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        planilhaCarregada = true;
+        montarEstruturaTabela();
+        exibirDashboard(contagemAtingimento, totalPacientes, dadosTabela);
+    }
+
+    function montarEstruturaTabela() {
+        const headerRow = document.getElementById('cabecalhoTabela');
+        headerRow.innerHTML = '<th>Nome do Paciente</th><th>Score Total</th>';
+        
+        regetasCampos.forEach(meta => {
+            const th = document.createElement('th');
+            th.innerHTML = `Col. ${meta.exibeColuna}<br><span style="font-weight:400; color:#94a3b8;">${meta.nome}</span>`;
+            headerRow.appendChild(th);
+        });
+    }
+
+    function exibirDashboard(contagemAtingimento, totalPacientes, dadosTabela) {
+        document.getElementById('dashboard').style.display = 'grid';
+
+        const labelsGrafico = regetasCampos.map(m => m.nome);
+        const dadosGrafico = regetasCampos.map(m => ((contagemAtingimento[m.id] / totalPacientes) * 100).toFixed(1));
+
+        if(chartInstancia) chartInstancia.destroy();
+
+        const ctx = document.getElementById('graficoMetas').getContext('2d');
+        chartInstancia = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labelsGrafico,
+                datasets: [{
+                    data: dadosGrafico,
+                    backgroundColor: function(context) {
+                        const val = context.raw;
+                        return val >= 75 ? '#10b981' : (val >= 50 ? '#f59e0b' : '#ef4444');
+                    },
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 30 } },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end', align: 'top', color: '#0f172a',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: function(value) { return value + '%'; }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        const tbody = document.querySelector('#tabelaPacientes tbody');
+        tbody.innerHTML = ''; 
+
+        dadosTabela.forEach(paciente => {
+            const tr = document.createElement('tr');
+            let innerHTML = `<td>${paciente.nome}</td><td><strong class="score-destaque">${paciente.pontos} / 100</strong></td>`;
+            
+            regetasCampos.forEach(meta => {
+                const dadosMeta = paciente.status[meta.id];
+                const classeCSS = dadosMeta.atingiu ? 'badge badge-success' : 'badge badge-danger';
+                innerHTML += `<td><span class="${classeCSS}">${dadosMeta.pontosGanhos} pts</span></td>`;
+            });
+            
+            tr.innerHTML = innerHTML;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
+</body>
+</html>

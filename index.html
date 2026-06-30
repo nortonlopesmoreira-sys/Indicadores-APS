@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Principal - Gestão de Indicadores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 50px;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-top: 0;
+            line-height: 1.5;
+        }
+
+        /* Container dos Botões em Grid */
+        .grid-indicadores {
+            display: grid;
+            /* Esta linha faz a mágica da responsividade automática */
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Estilo de cada Cartão/Botão */
+        .card-indicador {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-indicador:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        /* Fio superior decorativo no hover */
+        .card-indicador::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: transparent;
+            transition: background-color 0.3s ease;
+        }
+
+        .card-indicador:hover::before {
+            background-color: var(--primary);
+        }
+
+        .icon-container {
+            background-color: #f0f9ff;
+            color: var(--primary);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .text-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .indicador-numero {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .indicador-titulo {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        /* Responsividade Extra para Celulares Menores */
+        @media (max-width: 600px) {
+            body { padding: 30px 15px; }
+            h1 { font-size: 1.75rem; }
+            p.subtitle { font-size: 1rem; }
+            .grid-indicadores { grid-template-columns: 1fr; }
+            .card-indicador { padding: 20px; }
+            .icon-container { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>Painel de Gestão em Saúde</h1>
+        <p class="subtitle">Selecione abaixo o indicador que deseja analisar para visualizar as métricas, os gráficos de desempenho e o detalhamento dos pacientes.</p>
+    </div>
+
+    <div class="grid-indicadores">
+        
+        <a href="indicador2.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.91.05L12 20V4.5Z"/><path d="M16 11v9"/><path d="M19 11v9"/><path d="M16 14h3"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 2</span>
+                <h3 class="indicador-titulo">Desenvolvimento Infantil</h3>
+            </div>
+        </a>
+
+        <a href="indicador3.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 3</span>
+                <h3 class="indicador-titulo">Cuidado da Gestante e Puérpera</h3>
+            </div>
+        </a>
+
+        <a href="indicador4.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 4</span>
+                <h3 class="indicador-titulo">Cuidado da Pessoa com Diabetes</h3>
+            </div>
+        </a>
+
+        <a href="indicador5.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 5</span>
+                <h3 class="indicador-titulo">Cuidado da Pessoa com Hipertensão</h3>
+            </div>
+        </a>
+
+        <a href="indicador6.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="M12 11v10"/><path d="M8 15h8"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 6</span>
+                <h3 class="indicador-titulo">Cuidado da Pessoa Idosa</h3>
+            </div>
+        </a>
+
+        <a href="indicador7.html" class="card-indicador">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M20 21H4"/><path d="M12 21v-3"/><path d="M10 18h4"/></svg>
+            </div>
+            <div class="text-container">
+                <span class="indicador-numero">Indicador 7</span>
+                <h3 class="indicador-titulo">Prevenção do Câncer na Mulher</h3>
+            </div>
+        </a>
+        <a href="geral.html" class="card-indicador" style="border: 2px solid var(--primary);">
+            <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="text-container">
+                <h3 class="indicador-titulo">Relatório Geral de Desempenho</h3>
+            </div>
+        </a>
+
+    </div>
+
+</body>
+</html>
