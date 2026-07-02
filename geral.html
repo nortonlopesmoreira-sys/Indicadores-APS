@@ -87,6 +87,7 @@
         .badge { padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; display: inline-block; }
         .badge-warning { background-color: var(--warning-bg); color: var(--warning-text); }
         .badge-success { background-color: var(--success-bg); color: var(--success-text); }
+        .badge-danger { background-color: var(--danger-bg); color: var(--danger-text); }
 
         .botoes-acoes { display: flex; gap: 15px; margin-bottom: 30px; }
 
@@ -225,6 +226,15 @@
 
         <div class="card-upload">
             <div class="icon-container">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="M12 11v10"/><path d="M8 15h8"/></svg>
+            </div>
+            <h4>Ind. 6 - Cuidado da Pessoa Idosa</h4>
+            <input type="file" accept=".xlsx, .xls, .csv" onchange="carregarArquivo(6, this)">
+            <span class="badge badge-warning" id="status-6">Aguardando Arquivo</span>
+        </div>
+
+        <div class="card-upload">
+            <div class="icon-container">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M20 21H4"/><path d="M12 21v-3"/><path d="M10 18h4"/></svg>
             </div>
             <h4>Ind. 7 - Câncer na Mulher</h4>
@@ -254,7 +264,6 @@
 </div>
 
 <script>
-    // Dicionário de Metas e Feedbacks Específicos para extração dinâmica
     const dicIndicadores = {
         2: {
             nome: "Desenvolvimento Infantil",
@@ -294,6 +303,15 @@
                 { nome: 'Visitas ACS', validar: r => parseInt(r['N']) >= 2, neg: 'Ausência de vigilância primária e visitas inconstantes aos domicílios.', melh: 'Cobrar planejamento territorial dos ACS priorizando pacientes hipertensos que faltaram às últimas consultas.' }
             ]
         },
+        6: {
+            nome: "Cuidado da Pessoa Idosa",
+            metas: [
+                { nome: 'Consulta Anual', validar: r => (r['L'] === 'S' || r['L'] === 'SIM'), neg: 'Idosos sem registro de consulta médica ou de enfermagem nos últimos 12 meses, gerando vácuo no acompanhamento gerontológico.', melh: 'Agendar revisões clínicas programadas em datas próximas ao aniversário do usuário idoso.' },
+                { nome: 'Peso/Altura (x2)', validar: r => !isNaN(parseInt(r['M'])) && parseInt(r['M']) >= 2, neg: 'Déficit no monitoramento antropométrico bianual, dificultando a triagem precoce de desnutrição.', melh: 'Vincular a aferição compulsória de peso e altura à renovação de receitas de uso contínuo.' },
+                { nome: 'Visitas ACS (x2)', validar: r => parseInt(r['N']) >= 2 || r['N'] === '2+' || r['N'] === '2', neg: 'Baixa cobertura de visitas domiciliares preventivas, fragilizando a identificação de riscos ambientais.', melh: 'Utilizar o mapeamento territorial para priorizar idosos residentes sozinhos ou com restrições severas de mobilidade.' },
+                { nome: 'Vacina Influenza', validar: r => (r['O'] === 'S' || r['O'] === 'SIM'), neg: 'Ausência de imunização anual contra Influenza, elevando o risco de internações por síndromes respiratórias.', melh: 'Promover busca ativa vacinal imediata aproveitando o fluxo de atendimento diário e as visitas da equipe técnica.' }
+            ]
+        },
         7: {
             nome: "Câncer na Mulher",
             metas: [
@@ -305,7 +323,7 @@
     };
 
     const dadosCarregados = {};
-    const indicadores = [2, 3, 4, 5, 7];
+    const indicadores = [2, 3, 4, 5, 6, 7];
 
     function carregarArquivo(id, input) {
         const file = input.files[0];
@@ -326,14 +344,11 @@
             let somaTotal = 0;
             let analiseMetas = {};
 
-            // Inicializa a contagem individual para descobrir o gargalo
             dicIndicadores[id].metas.forEach(m => analiseMetas[m.nome] = 0);
 
             lista.forEach(r => {
-                // Cálculo exato das médias gerais para o painel de notas
                 somaTotal += calcularPontos(r, id);
 
-                // Verificação de sucesso para descobrir o maior Gargalo
                 dicIndicadores[id].metas.forEach(m => {
                     if(m.validar(r)) {
                         analiseMetas[m.nome]++;
@@ -341,7 +356,6 @@
                 });
             });
 
-            // Encontrar o pior desempenho (Menor % de sucesso)
             let piorPorcentagem = 101;
             let piorMetaObj = null;
 
@@ -367,7 +381,6 @@
     }
 
     function calcularPontos(r, id) {
-        // Função original preservada para garantir a exatidão das médias
         const checkStr = (val) => val === 'S' || val === 'SIM';
         switch(id) {
             case 2:
@@ -402,6 +415,12 @@
                 const m5_3 = (parseInt(r['N']) >= 2);
                 const m5_4 = checkStr(r['O']?.toString().toUpperCase());
                 return (m5_1?25:0) + (m5_2?25:0) + (m5_3?25:0) + (m5_4?25:0);
+            case 6:
+                const m6_1 = checkStr(r['L']?.toString().toUpperCase());
+                const m6_2 = (!isNaN(parseInt(r['M'])) && parseInt(r['M']) >= 2);
+                const m6_3 = (parseInt(r['N']) >= 2 || r['N'] === '2+' || r['N'] === '2');
+                const m6_4 = checkStr(r['O']?.toString().toUpperCase());
+                return (m6_1?25:0) + (m6_2?25:0) + (m6_3?25:0) + (m6_4?25:0);
             case 7:
                 const m7_1 = checkStr(r['F']?.toString().toUpperCase());
                 const m7_2 = checkStr(r['G']?.toString().toUpperCase());
@@ -443,7 +462,6 @@
                 const piorMeta = indDados.piorMeta;
                 const pct = indDados.pctPiorMeta;
                 
-                // Card de Nota
                 divRes.innerHTML += `
                     <div class="kpi-card ${infoClassificacao.classeBorda}">
                         <h4 class="kpi-title">Indicador ${i}<br><span style="font-size:0.7rem; font-weight:400; text-transform:none; color: var(--text-muted);">${subtitulo}</span></h4>
@@ -452,7 +470,6 @@
                     </div>
                 `;
 
-                // Card de Feedback baseado no Excel real
                 divFeed.innerHTML += `
                     <div class="feedback-card">
                         <h4>
