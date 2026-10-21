@@ -1,232 +1,352 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Principal - Gestão de Indicadores</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #0ea5e9;
-            --primary-hover: #0284c7;
-            --bg-body: #f8fafc;
-            --surface: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            margin: 0;
-            padding: 40px 20px;
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header-container {
-            text-align: center;
-            margin-bottom: 50px;
-            max-width: 800px;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-            letter-spacing: -0.02em;
-        }
-
-        p.subtitle {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            margin-top: 0;
-            line-height: 1.5;
-        }
-
-        /* Container dos Botões em Grid */
-        .grid-indicadores {
-            display: grid;
-            /* Esta linha faz a mágica da responsividade automática */
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        /* Estilo de cada Cartão/Botão */
-        .card-indicador {
-            background-color: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            text-decoration: none;
-            color: var(--text-dark);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-indicador:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary);
-        }
-
-        /* Fio superior decorativo no hover */
-        .card-indicador::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background-color: transparent;
-            transition: background-color 0.3s ease;
-        }
-
-        .card-indicador:hover::before {
-            background-color: var(--primary);
-        }
-
-        .icon-container {
-            background-color: #f0f9ff;
-            color: var(--primary);
-            padding: 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .text-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .indicador-numero {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .indicador-titulo {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        /* Responsividade Extra para Celulares Menores */
-        @media (max-width: 600px) {
-            body { padding: 30px 15px; }
-            h1 { font-size: 1.75rem; }
-            p.subtitle { font-size: 1rem; }
-            .grid-indicadores { grid-template-columns: 1fr; }
-            .card-indicador { padding: 20px; }
-            .icon-container { padding: 12px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Gestão em Saúde</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root{--p:#0ea5e9;--ph:#0284c7;--bg:#f8fafc;--sf:#fff;--tx:#0f172a;--mu:#64748b;--bd:#e2e8f0;--ok:#10b981;--wa:#f59e0b;--er:#ef4444;--sh:0 4px 6px -1px rgb(0 0 0/.1)}
+*{box-sizing:border-box}
+body{font-family:Inter,sans-serif;background:var(--bg);margin:0;padding:30px 20px;color:var(--tx)}
+.wrap{max-width:1400px;margin:auto}
+h1{font-size:1.5rem;margin:0}h3{margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.unit{color:var(--p);font-weight:600;margin-top:4px}
+.btn{background:#059669;color:#fff;border:0;padding:10px 20px;border-radius:8px;font:600 .9rem Inter;cursor:pointer}
+.btn.pri{background:var(--p)}.btn.pri:hover{background:var(--ph)}
+a.back{color:var(--mu);text-decoration:none;font-size:.9rem;font-weight:500}a.back:hover{color:var(--p)}
+.up{background:var(--sf);text-align:center;margin-bottom:24px;padding:32px 20px;border:2px dashed var(--bd);border-radius:12px}
+.up:hover{border-color:var(--p)}
+input[type=file]::file-selector-button{padding:9px 18px;border-radius:8px;border:0;background:var(--p);color:#fff;font-weight:600;cursor:pointer;margin-right:12px}
+.card{background:var(--sf);padding:24px;border-radius:16px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:24px}
+.ct{font-size:1.15rem;font-weight:700;margin:0 0 16px;border-bottom:2px solid var(--bd);padding-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:24px}
+.kpi{background:var(--sf);padding:20px;border-radius:16px;box-shadow:var(--sh);border:1px solid var(--bd);border-left:6px solid var(--p)}
+.kpi h4{margin:0 0 6px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mu)}
+.kpi p{margin:0;font-size:2rem;font-weight:700}
+.chart{height:380px;position:relative}
+.fi{border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:16px;break-inside:avoid}
+.fh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--bd);padding-bottom:10px;margin-bottom:12px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fb{background:#f8fafc;padding:14px;border-radius:8px;border-left:4px solid #cbd5e1}
+.fb.negativo{border-color:var(--er)}.fb.melhorar{border-color:var(--p)}.fb.sucesso{border-color:var(--ok)}
+.fb h5{margin:0 0 6px;font-size:.8rem;text-transform:uppercase;color:var(--mu)}.fb p{margin:0;font-size:.93rem;line-height:1.5;color:#334155}
+.badge{padding:5px 11px;border-radius:999px;font-weight:600;font-size:.75rem;display:inline-block}
+.badge-success{background:#dcfce7;color:#166534}.badge-danger{background:#fee2e2;color:#991b1b}.badge-warning{background:#fef08a;color:#854d0e}.badge-na{background:#e2e8f0;color:#475569}
+.tw{overflow:auto;max-height:500px;border:1px solid var(--bd);border-radius:12px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem;min-width:900px}
+th,td{padding:12px 16px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{background:#f8fafc;color:var(--mu);font-size:.72rem;text-transform:uppercase;position:sticky;top:0;z-index:10}
+td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:var(--sf);z-index:11;font-weight:500}
+.dg{list-style:none;margin:0;padding:0}.dg li{padding:8px 0;border-bottom:1px solid var(--bd);font-size:.9rem;line-height:1.45}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:1200px;margin:auto}
+.mc{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:24px;text-decoration:none;color:var(--tx);display:flex;gap:16px;align-items:center;transition:.25s}
+.mc:hover{transform:translateY(-4px);border-color:var(--p);box-shadow:0 10px 15px -3px rgb(0 0 0/.1)}
+.mn{background:#f0f9ff;color:var(--p);width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;flex-shrink:0}
+.ml{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--p);font-weight:700}
+.mt{font-size:1.1rem;font-weight:600}
+.gr{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.gr .c{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.gr .ot{border-left:6px solid #10b981}.gr .bm{border-left:6px solid #0ea5e9}.gr .sf{border-left:6px solid #f59e0b}.gr .rg{border-left:6px solid #ef4444}.gr .au{border-left:6px solid #94a3b8}
+.tot{color:#10b981}.tbm{color:#0ea5e9}.tsf{color:#d97706}.trg{color:#ef4444}.tau{color:#94a3b8}
+.pr{display:none}
+[hidden]{display:none!important}
+@media(max-width:700px){.fg{grid-template-columns:1fr}}
+@media print{body{background:#fff;padding:0}.top,.up,#cT{display:none!important}.pr{display:block;text-align:center;border-bottom:3px double #0f172a;margin-bottom:24px;padding-bottom:12px}.card,.kpi,.fi{box-shadow:none!important;border:1px solid #cbd5e1!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.plb{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.plb select{padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font:500 .85rem Inter;background:#fff}
+#pl{display:none}
+.plt{min-width:0;width:100%;border-collapse:collapse;font-size:7.5px;font-family:Verdana,Tahoma,'DejaVu Sans',Arial,sans-serif;font-weight:400;font-synthesis:none;-webkit-text-stroke:0}
+.plt .pn,.plt td,.plt th{font-family:inherit}
+.plt th,.plt td{padding:1px 3px;border:1px solid #94a3b8;text-align:center;position:static;white-space:nowrap;font-weight:400;background:#fff}
+.plt th{background:#e2e8f0!important;color:#0f172a;font-size:7px;text-transform:none;vertical-align:bottom}
+.plt td:first-child,.plt th:first-child{position:static;font-weight:400;text-align:center;z-index:auto}
+.plt th:nth-child(n+3),.plt td:nth-child(n+3){width:9mm}
+.plt .plh{text-align:left!important;font-size:9px;font-weight:700;white-space:normal;background:#fff!important;border:0;border-bottom:2px solid #0f172a;padding:0 0 3px;vertical-align:top}
+.plt .pn{text-align:left!important;max-width:80mm;overflow:hidden;text-overflow:ellipsis}
+.plt td.y{color:#166534;font-weight:700}
+.plt td.n{background:#fecaca!important;color:#991b1b;font-weight:700}
+.plt tr{break-inside:avoid}
+.vt{writing-mode:vertical-rl;transform:rotate(180deg);height:27mm;margin:auto;white-space:normal;line-height:1.15;text-align:left}
+@media print{body.gr-mode .wrap>*:not(#gR):not(.pr){display:none!important}body.gr-mode #gR{display:block!important}.gr .c{break-inside:avoid}}
+@media print{body.pl-mode .wrap>*:not(#pl){display:none!important}body.pl-mode #pl{display:block!important}}
+</style>
+<style id="pg"></style>
 </head>
 <body>
+<div class="wrap" id="app"></div>
+<script>
+Chart.register(ChartDataLabels);
 
-    <div class="header-container">
-        <h1>Painel de Gestão em Saúde</h1>
-        <p class="subtitle">Selecione abaixo o indicador que deseja analisar para visualizar as métricas, os gráficos de desempenho e o detalhamento dos pacientes.</p>
-    </div>
+/* ============ UTILIDADES ============ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const SN = v => ['S','SIM'].includes(String(v).trim().toUpperCase());
+const num = v => { const n = parseInt(v); return isNaN(n) ? null : n; };
+function atende(m, v) {
+  if (m.t === 'sn') return SN(v);
+  if (m.t === 'vis') return (num(v) !== null && num(v) >= 2) || String(v).trim() === '2+';
+  const n = num(v); return n !== null && n >= +m.t.slice(1);   // 'n9' = numero >= 9
+}
 
-    <div class="grid-indicadores">
-        
-        <a href="indicador2.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.91.05L12 20V4.5Z"/><path d="M16 11v9"/><path d="M19 11v9"/><path d="M16 14h3"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 2</span>
-                <h3 class="indicador-titulo">Desenvolvimento Infantil</h3>
-            </div>
-        </a>
+/* ============ CONFIGURACAO: UMA UNICA FONTE DE VERDADE ============
+   c = coluna(s) esperada(s) | k = trecho do cabecalho esperado (sem acento, minusculo)
+   t = sn (S/SIM) | nX (numero >= X) | vis (>=2 ou "2+") | p = pontos
+   O sistema confere o cabecalho de cada coluna e, se mudou de lugar, localiza pelo nome. */
+const M = (n, p, c, k, t, neg, melh) => ({ n, p, c, k, t, neg, melh });
+const IND = {
+2: { t: 'Desenvolvimento Infantil', sub: 'Crianças', eq: ['H','equipe area'], metas: [
+  M('1ª Consulta < 30 dias',20,['M'],['consulta medica/enfermagem 1'],'sn','Atraso na captação precoce de recém-nascidos para a primeira avaliação clínica.','Estruturar canal ágil de aviso de alta com as maternidades locais e programar busca ativa imediata na primeira semana de vida.'),
+  M('09 Consultas < 2 anos',20,['N'],['nr. consultas'],'n9','Perda de seguimento ou quebra no cronograma padrão de consultas programadas de puericultura.','Garantir o agendamento fixo da consulta subsequente no balcão de recepção antes da saída da mãe da unidade.'),
+  M('09 Registros Peso/Altura',20,['O'],['peso/altura'],'n9','Falta de registro ou omissão da coleta de dados antropométricos durante os atendimentos de rotina.','Tornar a pesagem e a medição de estatura etapas mandatórias no acolhimento/triagem de enfermagem para todo menor de 2 anos.'),
+  M('02 Visitas Domiciliares ACS',20,['P','Q'],['domiciliar 1','domiciliar 6'],'sn','Insuficiência de visitas domiciliares focadas na vigilância e acompanhamento da primeira infância.','Disponibilizar relatórios territoriais mensais aos ACS mapeando crianças menores de 2 anos com visitas em atraso.'),
+  M('Esquema Vacinal Completo',20,['S','T','U','V','W'],['esquema vacinal','pentavalente','polio','sarampo','pneumococica'],'sn','Atrasos vacinais acumulados ou ausência de monitoramento preventivo da carteira de vacinação.','Realizar mutirões de atualização vacinal na unidade e criar alertas no prontuário eletrônico para crianças com pendências na imunização.')]},
+3: { t: 'Cuidado da Gestante e Puérpera', sub: 'Gestantes', eq: ['G','equipe area'], metas: [
+  M('1ª Consulta < 12sem',9,['N'],['ate 12 semanas'],'sn','Início tardio do acompanhamento pré-natal, reduzindo a janela para detecção precoce de malformações ou riscos gestacionais.','Implementar teste rápido de gravidez na triagem com agendamento imediato da primeira consulta médica/enfermagem no mesmo dia.'),
+  M('Consultas Med/Enf (≥7)',10,['O'],['consulta medica/enfermagem gestacao'],'n7','Frequência inadequada de consultas de pré-natal, descumprindo o cronograma mínimo para uma gestação de baixo risco.','Vincular o agendamento prévio das próximas consultas no balcão de atendimento e acionar busca ativa via ACS em caso de faltas.'),
+  M('Aferição PA (≥7)',9,['P'],['pressao arterial'],'n7','Subregistro ou omissão na aferição de pressão arterial, elevando o risco de não detecção de síndromes hipertensivas da gestação (DHEG).','Tornar a verificação de PA mandatória em qualquer ponto de contato da gestante na unidade (acolhimento, vacina, farmácia).'),
+  M('Peso/Altura (≥7)',9,['Q'],['peso/altura'],'n7','Falta de acompanhamento estruturado do ganho ponderal e estado nutricional ao longo dos trimestres gestacionais.','Garantir a calibração periódica das balanças da unidade e padronizar o registro imediato das medidas antropométricas no prontuário.'),
+  M('Visitas ACS Gestação (≥3)',9,['S'],['domiciliares (acs/tacs) gestacao'],'n3','Baixa cobertura de visitas domiciliares por parte dos ACS durante o período gestacional para orientações preventivas.','Mapear territorialmente as gestantes de cada microárea e monitorar mensalmente as planilhas de produção dos ACS para cumprimento da meta.'),
+  M('Vacina dTpa',9,['T'],['dtpa'],'sn','Atraso ou omissão na imunização da gestante contra tétano, difteria e coqueluche, desprotegendo o binômio e o recém-nascido.','Avaliar o cartão vacinal em todas as consultas pré-natais, realizando o encaminhamento compulsório à sala de vacina.'),
+  M('Sífilis 1º Tri',9,['U'],['sifilis primeiro'],'sn','Ausência ou atraso na triagem sorológica para sífilis no primeiro trimestre, aumentando significativamente o risco de transmissão vertical.','Disponibilizar e executar rotineiramente testes rápidos de sífilis na primeira consulta de acolhimento do pré-natal.'),
+  M('HIV 1º Tri',9,['V'],['hiv primeiro'],'sn','Falta de triagem precoce para HIV, inviabilizando a introdução oportuna da profilaxia antirretroviral protetiva.','Garantir estoque regular de testes rápidos e treinar os técnicos/enfermeiros para execução logo no acolhimento inicial.'),
+  M('Hep B 1º Tri',9,['W'],['hepatite b'],'sn','Falta de rastreamento para Hepatite B no início da gestação, comprometendo medidas preventivas e imunoprofilaxia perinatal.','Incluir os testes rápidos de Hepatite B de maneira mandatória no checklist padrão de exames laboratoriais do primeiro trimestre.'),
+  M('Hep C 1º Tri',9,['X'],['hepatite c'],'sn','Omissão na triagem inicial de Hepatite C, prejudicando o mapeamento epidemiológico de riscos e os cuidados maternos pós-parto.','Padronizar a solicitação e execução em bloco juntamente com os demais testes rápidos de primeiro trimestre na rotina da enfermagem.'),
+  M('Sífilis 3º Tri',9,['Y'],['sifilis terceiro'],'sn','Janela desprotegida no final da gestação pela ausência da segunda triagem de sífilis, gerando riscos críticos pré-parto.','Adicionar um alerta visual ou eletrônico no prontuário para agendamento dos exames de rotina do 3º trimestre na 28ª semana gestacional.'),
+  M('HIV 3º Tri',9,['Z'],['hiv terceiro'],'sn','Ausência de reavaliação sorológica para HIV na reta final da gravidez, expondo a mãe e o bebê a riscos no momento do parto.','Instituir que a segunda bateria de testes rápidos de ISTs seja disparada de forma fixa na abertura das consultas do último trimestre.'),
+  M('Consulta Puerpério',9,['AA'],['consulta medica/enfermagem puerperio'],'sn','Baixa adesão ou falta de busca ativa para a consulta puerperal (até 42 dias pós-parto), deixando a mulher desassistida no pós-parto.','Agendar a consulta puerperal de forma casada com a primeira consulta do recém-nascido assim que informada a alta da maternidade.'),
+  M('Visitas ACS Puerpério',9,['AB'],['domiciliares (acs/tacs) puerperio'],'sn','Insuficiência de visitas do ACS na fase crucial do puerpério imediato para apoio à amamentação e rastreio de depressão pós-parto.','Fixar protocolo onde o ACS deve realizar a visita domiciliar obrigatória em até 7 dias após o nascimento do bebê.'),
+  M('Avaliação Odonto',9,['AC'],['odontologica'],'sn','Baixo encaminhamento ou absenteísmo na consulta odontológica pré-natal, negligenciando o foco em saúde bucal na gestação.','Garantir o encaminhamento direto interconsultas para a equipe de saúde bucal com vaga prioritária logo no início do pré-natal.')]},
+4: { t: 'Cuidado da Pessoa com Diabetes', sub: 'Pacientes', eq: ['G','equipe area'], metas: [
+  M('Consulta',20,['L'],['consulta'],'sn','Diabéticos circulando na rede de atenção básica sem avaliação clínica médica ou de enfermagem recente documentada.','Vincular a dispensação de medicamentos contínuos na farmácia à validade da consulta, evitando renovação automática sem avaliação.'),
+  M('Aferição PA',15,['M'],['aferic'],'sn','Exame físico básico (Pressão Arterial) negligenciado durante o acompanhamento contínuo do paciente diabético.','Tornar a passagem pela sala de triagem obrigatória para pacientes crônicos antes de qualquer atendimento médico.'),
+  M('Peso/Altura',15,['N'],['peso/altura'],'n1','Falta de controle antropométrico contínuo (Peso e Estatura), dado clínico essencial para o manejo do diabetes.','Garantir a coleta e o registro sistêmico dos dados de peso e altura a cada retorno do paciente à UBS.'),
+  M('Visitas ACS/TACS',20,['O'],['visitas'],'vis','Monitoramento e vigilância domiciliar insuficientes ou ausentes por parte da equipe de Agentes Comunitários de Saúde.','Direcionar as visitas do ACS especificamente para os pacientes crônicos estratificados como não compensados ou faltosos nas consultas.'),
+  M('Hemoglobina',15,['P'],['hemoglobina'],'sn','Ausência ou atraso no monitoramento laboratorial do controle glicêmico semestral (Hemoglobina Glicada).','Organizar coletas laboratoriais programadas na própria unidade ou garantir cota fixa mensal para pacientes do programa Hiperdia.'),
+  M('Avaliação dos Pés',15,['Q'],['avaliacao dos pes'],'sn','Risco altíssimo de complicações e amputações devido à falta de avaliação preventiva e teste de sensibilidade nos membros inferiores.','Capacitar a equipe de enfermagem para utilizar o monofilamento, realizando e registrando o exame do pé diabético na rotina clínica anual.')]},
+5: { t: 'Cuidado da Pessoa com Hipertensão', sub: 'Pacientes', eq: ['G','equipe area'], metas: [
+  M('Consulta',25,['L'],['consulta'],'sn','Pacientes hipertensos circulando pela rede sem registro de consulta médica ou de enfermagem validada para acompanhamento de rotina.','Organizar mutirões ou turnos dedicados na agenda da equipe para consultas de enfermagem focadas na renovação e acompanhamento do programa Hiperdia.'),
+  M('Peso/Altura',25,['M'],['peso/altura'],'n1','Ausência dos parâmetros antropométricos básicos, impedindo o cálculo de IMC e agravando o risco de complicações cardiovasculares.','Tornar a passagem do paciente crônico pela sala de triagem um fluxo obrigatório antes do atendimento final com o profissional solicitante.'),
+  M('Visitas ACS/TACS',25,['N'],['visitas'],'vis','Queda na vigilância primária; as visitas domiciliares mínimas estipuladas não estão sendo garantidas para este grupo.','Orientar o planejamento territorial mensal dos Agentes Comunitários, garantindo que usuários crônicos faltosos sejam o alvo prioritário das visitas.'),
+  M('Aferição PA',25,['O'],['pressao arterial'],'sn','Falha grave na alimentação de dados: a pressão arterial não está sendo coletada ou transcrita no prontuário do hipertenso.','Capacitar e auditar a equipe técnica responsável pela coleta de sinais vitais, exigindo o lançamento imediato da Pressão Arterial no e-SUS.')]},
+6: { t: 'Cuidado da Pessoa Idosa', sub: 'Idosos', eq: ['G','equipe area'], metas: [
+  M('Consulta Anual',25,['L'],['consulta'],'sn','Idosos sem registro de consulta médica ou de enfermagem nos últimos 12 meses, gerando lacunas severas no acompanhamento gerontológico de rotina.','Agendar revisões clínicas periódicas de forma programada, utilizando datas próximas ao aniversário do usuário idoso cadastrado.'),
+  M('Peso/Altura x2',25,['M'],['peso/altura'],'n2','Déficit no monitoramento antropométrico bianual, impedindo o cálculo de IMC e retardando a triagem de desnutrição crônica ou sarcopenia.','Vincular de forma compulsória a aferição de peso e altura a todas as passagens do idoso pela unidade ou à renovação de receitas contínuas.'),
+  M('Visitas ACS x2',25,['N'],['visitas'],'vis','Baixa cobertura de vigilância primária no domicílio; as visitas mínimas estipuladas não estão sendo asseguradas para a segurança deste idoso.','Planejar os roteiros territoriais mensais dos ACS priorizando idosos que residem sozinhos ou com limitações funcionais.'),
+  M('Vacina Influenza',25,['O'],['influenza'],'sn','Ausência de imunização anual registrada contra Influenza, elevando os riscos de internações por síndromes respiratórias graves.','Aproveitar todo contato assistencial em sala de vacinas, farmácia ou recepção para realizar busca ativa e atualização da dose anual.')]},
+7: { t: 'Prevenção do Câncer na Mulher', sub: 'Mulheres', na: true, eq: ['L','equipe area'], metas: [
+  M('Colo do Útero',20,['F'],['colo do utero'],'sn','Baixíssima cobertura populacional para rastreamento de colo de útero.','Gerar listas nominais via e-SUS de mulheres com preventivo atrasado e ofertar horários alternativos (terceiro turno).'),
+  M('Vacina HPV',30,['G'],['hpv'],'sn','Déficit na prevenção primária do HPV entre meninas de 9 a 14 anos.','Organizar palestras na sala de espera e fortalecer ações integradas com escolas da microárea.'),
+  M('Saúde Sexual/Reprod.',30,['H'],['reprodutiva'],'sn','Déficit na promoção de educação em saúde sexual e reprodutiva.','Organizar palestras na sala de espera e fortalecer ações integradas com escolas da microárea.'),
+  M('Mamografia',20,['I'],['mama'],'sn','Mulheres na faixa de risco estão sem solicitação ou execução de mamografia.','Eliminar barreiras de agendamento; a equipe de enfermagem deve ser autorizada a protocolar solicitações em massa.')]}
+};
 
-        <a href="indicador3.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 3</span>
-                <h3 class="indicador-titulo">Cuidado da Gestante e Puérpera</h3>
-            </div>
-        </a>
+/* ============ MOTOR DE ANALISE ============ */
+function analisar(rows, cfg) {
+  const head = rows[0] || {}, iss = [];
+  const hs = Object.entries(head).map(([l, h]) => [l, norm(h)]);
+  const achar = k => (hs.find(([, h]) => h.includes(k)) || [])[0];
+  const resolve = (c, k, rot) => {
+    if (norm(head[c]).includes(k)) return c;
+    const f = achar(k);
+    iss.push(f ? ['warn', `${rot}: cabeçalho "${k}" esperado na coluna ${c}, mas está na coluna ${f}. Remapeado automaticamente.`]
+               : ['err', `${rot}: cabeçalho "${k}" (esperado na coluna ${c}) não encontrado. Meta ignorada.`]);
+    return f || null;
+  };
+  const pac = rows.slice(1).filter(r => String(r.A).trim());
+  const total = pac.length;
+  const eqCol = resolve(cfg.eq[0], cfg.eq[1], 'Equipe');
+  const unit = (eqCol && pac[0] && String(pac[0][eqCol]).trim()) || 'Unidade Não Identificada';
 
-        <a href="indicador4.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 4</span>
-                <h3 class="indicador-titulo">Cuidado da Pessoa com Diabetes</h3>
-            </div>
-        </a>
+  const metas = cfg.metas.map(m => ({ ...m, cols: m.c.map((c, j) => resolve(c, m.k[j], m.n)) })).filter(m => m.cols.every(Boolean));
+  metas.forEach(m => { m.ok = 0; m.na = 0; });
 
-        <a href="indicador5.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 5</span>
-                <h3 class="indicador-titulo">Cuidado da Pessoa com Hipertensão</h3>
-            </div>
-        </a>
+  const tab = []; let soma = 0, nScore = 0;
+  pac.forEach(r => {
+    let ganho = 0, aplic = 0; const st = [];
+    metas.forEach(m => {
+      const vals = m.cols.map(c => r[c]);
+      const na = cfg.na && vals.some(v => String(v).trim() === '-');
+      if (na) { m.na++; st.push({ na: true }); return; }
+      aplic += m.p;
+      const ok = vals.every(v => atende(m, String(v).trim().toUpperCase()));
+      if (ok) { ganho += m.p; m.ok++; }
+      st.push({ ok, pts: ok ? m.p : 0 });
+    });
+    let score = cfg.na ? (aplic ? ganho / aplic * 100 : null) : Math.min(ganho, 100);
+    if (score !== null) { score = Math.round(score * 10) / 10; soma += score; nScore++; }
+    tab.push({ nome: String(r.A).trim(), score, st, acomp: r });
+  });
+  metas.forEach(m => { m.ap = total - m.na; m.pct = m.ap ? m.ok / m.ap * 100 : 0; });
 
-        <a href="indicador6.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="M12 11v10"/><path d="M8 15h8"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 6</span>
-                <h3 class="indicador-titulo">Cuidado da Pessoa Idosa</h3>
-            </div>
-        </a>
+  // ---- diagnostico dos dados ----
+  metas.forEach(m => m.cols.forEach((c, j) => {
+    const vals = pac.map(r => String(r[c]).trim()), rot = `Col. ${c} (${m.n})`;
+    if (m.t === 'sn') {
+      const bad = vals.filter(v => !['S','N','SIM','NAO','NÃO','-',''].includes(v.toUpperCase()));
+      if (bad.length) iss.push(['err', `${rot}: esperado S/N, mas há ${bad.length} valor(es) como "${[...new Set(bad)].slice(0,3).join('", "')}". A coluna provavelmente está deslocada.`]);
+    } else {
+      const bad = vals.filter(v => v !== '' && v !== '-' && !/^\d+(\.\d+)?\+?$/.test(v));
+      if (bad.length) iss.push(['err', `${rot}: esperado número, mas há ${bad.length} valor(es) como "${[...new Set(bad)].slice(0,3).join('", "')}". A coluna provavelmente está deslocada.`]);
+      const big = vals.filter(v => /^\d+(\.\d+)?$/.test(v) && +v > 30);
+      if (big.length) iss.push(['warn', `${rot}: ${big.length} valor(es) acima de 30 (máx. ${Math.max(...big)}). Possível erro de registro na origem.`]);
+    }
+    const dash = vals.filter(v => v === '-').length;
+    if (dash) iss.push([cfg.na ? 'info' : 'warn', cfg.na ? `${rot}: "-" em ${dash} linhas = "não se aplica" (fora da faixa etária). Essas linhas saem do denominador desta meta.` : `${rot}: ${dash} célula(s) com "-" tratada(s) como não atendido.`]);
+  }));
+  metas.forEach(m => { if (m.pct === 100 && m.ap > 5) iss.push(['info', `${m.n}: 100% de atendimento em todas as linhas. Confira se a coluna não vem pré-filtrada do e-SUS.`]); });
+  ['cpf', 'cns'].forEach(k => {
+    const col = (hs.find(([, h]) => h === k) || [])[0]; if (!col) return;
+    const seen = {}, d = []; pac.forEach(r => { const v = String(r[col]).trim(); if (!v) return; if (seen[v]) d.push(r.A); seen[v] = 1; });
+    if (d.length) iss.push(['warn', `${d.length} registro(s) repetido(s) por ${k.toUpperCase()} (${[...new Set(d)].slice(0,3).join(', ')}). Contam em dobro na média.`]);
+  });
+  const ac = achar('acompanhado');
+  if (ac && pac.every(r => ['S','N'].includes(String(r[ac]).trim().toUpperCase()))) {
+    const dif = tab.filter(t => (SN(t.acomp[ac]) !== (t.score !== null && t.score >= 100))).length;
+    iss.push(dif ? ['warn', `A regra do sistema diverge da coluna "Acompanhado" em ${dif} de ${total} linhas. Revise as regras deste indicador.`]
+                 : ['ok', `A pontuação do sistema bate com a coluna "Acompanhado" nas ${total} linhas (regra validada).`]);
+  }
+  if (!iss.some(i => i[0] === 'err' || i[0] === 'warn')) iss.unshift(['ok', 'Todas as colunas esperadas foram encontradas nas posições corretas.']);
+  return { unit, total, media: nScore ? (soma / nScore).toFixed(1) : '0.0', metas, tab, iss };
+}
 
-        <a href="indicador7.html" class="card-indicador">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M20 21H4"/><path d="M12 21v-3"/><path d="M10 18h4"/></svg>
-            </div>
-            <div class="text-container">
-                <span class="indicador-numero">Indicador 7</span>
-                <h3 class="indicador-titulo">Prevenção do Câncer na Mulher</h3>
-            </div>
-        </a>
-        <a href="geral.html" class="card-indicador" style="border: 2px solid var(--primary);">
-            <div class="icon-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div class="text-container">
-                <h3 class="indicador-titulo">Relatório Geral de Desempenho</h3>
-            </div>
-        </a>
+function lerArquivo(file, cb) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 'A', defval: '' }));
+    } catch (x) { alert('Não foi possível ler a planilha: ' + x.message); }
+  };
+  r.readAsArrayBuffer(file);
+}
 
-    </div>
+/* ============ TELAS ============ */
+const faixa = p => p >= 75 ? ['badge-success', 'Desempenho Adequado', 'sucesso'] : p >= 50 ? ['badge-warning', 'Alerta / Necessita Atenção', 'melhorar'] : ['badge-danger', 'Crítico / Intervenção Urgente', 'negativo'];
+const ICON = { ok: '✅', info: 'ℹ️', warn: '⚠️', err: '❌' };
+let chart = null, LAST = null;
 
+function viewMenu() {
+  $('app').innerHTML = `<div style="text-align:center;margin-bottom:40px"><h1 style="font-size:2.2rem">Painel de Gestão em Saúde</h1>
+  <p style="color:var(--mu);font-size:1.1rem">Selecione abaixo o indicador que deseja analisar para visualizar as métricas, os gráficos de desempenho e o detalhamento dos pacientes.</p></div>
+  <div class="menu">${Object.keys(IND).map(i => `<a class="mc" href="#ind${i}"><div class="mn">${i}</div><div><div class="ml">Indicador ${i}</div><div class="mt">${IND[i].t}</div></div></a>`).join('')}
+  <a class="mc" href="#geral" style="border:2px solid var(--p)"><div class="mn">Σ</div><div class="mt">Relatório Geral de Desempenho</div></a></div>`;
+}
+
+function viewInd(id) {
+  const cfg = IND[id];
+  $('app').innerHTML = `
+  <div class="pr"><h1>RELATÓRIO DE AUDITORIA E DESEMPENHO</h1><h2>Indicador ${id} – ${cfg.t}</h2><b>🏢 Unidade/Equipe: <span id="uP"></span></b></div>
+  <div class="top"><div><h1>Painel do Indicador ${id} – ${cfg.t}</h1><div class="unit" id="uN" hidden>🏢 Unidade Analisada: <span id="uT"></span></div></div>
+  <div style="display:flex;gap:16px;align-items:center"><button class="btn" onclick="if(!window.ok_)alert('Faça o upload da planilha primeiro.');else print()">🖨 Imprimir Gráficos e Feedbacks</button><a class="back" href="#menu">← Voltar ao Início</a></div></div>
+  <div class="up"><h3 style="margin-bottom:8px">Análise de Dados por Unidade</h3><p style="color:var(--mu);font-size:.9rem;margin:0 0 16px">Insira a planilha deste indicador para auditar as notas e gerar os planos de ação de cada critério.</p><input type="file" id="f" accept=".xlsx,.xls,.csv"></div>
+  <div id="dash" hidden></div><div id="pl"></div>`;
+  window.ok_ = false;
+  $('f').onchange = e => lerArquivo(e.target.files[0], rows => {
+    const r = analisar(rows, cfg);
+    if (!r.total) return alert('Nenhum dado válido de paciente foi encontrado.');
+    if (!r.metas.length) { mostrarDiag(r); return; }
+    window.ok_ = true; LAST = { r, id }; $('uT').innerText = $('uP').innerText = r.unit; $('uN').hidden = false;
+    $('dash').hidden = false;
+    $('dash').innerHTML = `
+    <div class="card"><h3 class="ct">🔎 Diagnóstico da Planilha</h3><ul class="dg">${r.iss.map(i => `<li>${ICON[i[0]]} ${esc(i[1])}</li>`).join('')}</ul></div>
+    <div class="kpis"><div class="kpi"><h4>Total Analisado (${cfg.sub})</h4><p style="color:var(--p)">${r.total}</p></div>
+    <div class="kpi" style="border-left-color:var(--ok)"><h4>Média Geral da Unidade</h4><p style="color:var(--ok)">${r.media} pts</p></div></div>
+    <div class="card"><h3 class="ct">Gráfico de Cumprimento de Metas</h3><div class="chart"><canvas id="cv"></canvas></div></div>
+    <div class="card"><h3 class="ct">Auditoria e Planos de Ação por Critério</h3>${r.metas.map(m => {
+      const p = +m.pct.toFixed(1), [bc, tx, cl] = faixa(p);
+      const dg = p >= 75 ? `Excelente cobertura identificada nos dados extraídos (${p}%). O fluxo assistencial e de registro está funcionando de forma eficiente na unidade.` : p >= 50 ? `Atingimento parcial verificado (${p}%). ${m.neg}` : `Grave gargalo operacional constatado na planilha (${p}% de conformidade). ${m.neg}`;
+      const ac = p >= 75 ? 'Manter o monitoramento por amostragem mensal e parabenizar a equipe de saúde pelo engajamento na manutenção deste indicador.' : p >= 50 ? `Reforçar processos estruturais da unidade: ${m.melh}` : `Ação imediata recomendada: ${m.melh}`;
+      return `<div class="fi"><div class="fh"><div>🎯 Meta: <strong>${m.n} (${m.p}pts)</strong> (Col. ${m.cols.join(' e ')})</div><div><span class="badge" style="background:#f1f5f9;margin-right:8px">Sucesso: ${p}%${m.na ? ` · ${m.ap} elegíveis` : ''}</span><span class="badge ${bc}">${tx}</span></div></div>
+      <div class="fg"><div class="fb ${cl === 'sucesso' ? 'sucesso' : 'negativo'}"><h5>Diagnóstico Situacional</h5><p>${dg}</p></div><div class="fb melhorar"><h5>Plano de Intervenção e Ação</h5><p>${ac}</p></div></div></div>`;
+    }).join('')}</div>
+    <div class="card" id="cT" style="padding:0;overflow:hidden"><div style="padding:24px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h3 class="ct" style="border:0;margin:0">Lista Detalhada de Pontuação Nominal</h3>
+    <div class="plb"><select id="plF"><option value="todos">Todos os pacientes</option><option value="pend">Somente com metas pendentes</option><option value="ok">Somente com todas as metas atingidas</option></select>
+    <button class="btn pri" onclick="imprimirLista()">🖨 Imprimir Lista de Verificação (A4)</button></div></div>
+    <div class="tw" style="border:0;border-radius:0;border-top:1px solid var(--bd);margin-top:14px"><table><thead><tr><th>Nome</th><th>Score Total</th>${r.metas.map(m => `<th>Col. ${m.cols.join('+')}<br><span style="font-weight:400;color:#94a3b8">${m.n}</span></th>`).join('')}</tr></thead>
+    <tbody>${r.tab.map(t => `<tr><td>${esc(t.nome)}</td><td><strong>${t.score === null ? '—' : t.score + ' / 100'}</strong></td>${t.st.map(s => s.na ? '<td><span class="badge badge-na">N/A</span></td>' : `<td><span class="badge ${s.ok ? 'badge-success' : 'badge-danger'}">${s.pts} pts</span></td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+    if (chart) chart.destroy();
+    chart = new Chart($('cv').getContext('2d'), { type: 'bar',
+      data: { labels: r.metas.map(m => `${m.cols.join('+')} - ${m.n}`), datasets: [{ data: r.metas.map(m => +m.pct.toFixed(1)), backgroundColor: c => c.raw >= 75 ? '#10b981' : c.raw >= 50 ? '#f59e0b' : '#ef4444', borderRadius: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30 } },
+        plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: '#0f172a', font: { weight: 'bold', size: 11 }, formatter: v => v + '%' } },
+        scales: { y: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } } });
+  });
+  function mostrarDiag(r) { $('dash').hidden = false; $('dash').innerHTML = `<div class="card"><h3 class="ct">🔎 Diagnóstico da Planilha</h3><ul class="dg">${r.iss.map(i => `<li>${ICON[i[0]]} ${esc(i[1])}</li>`).join('')}</ul></div>`; }
+}
+
+/* ---- Impressao A4: lista de verificacao ---- */
+function imprimirLista() {
+  if (!LAST) return alert('Faça o upload da planilha primeiro.');
+  const { r, id } = LAST, cfg = IND[id], f = $('plF').value;
+  const lista = r.tab.filter(t => f === 'pend' ? t.st.some(s => !s.na && !s.ok) : f === 'ok' ? t.st.every(s => s.na || s.ok) : true);
+  if (!lista.length) return alert('Nenhum paciente neste filtro.');
+  const land = r.metas.length > 7;   // muitas metas (ex.: gestante) = A4 paisagem
+  const filtro = { todos: 'Todos os pacientes', pend: 'Somente com metas pendentes', ok: 'Somente com todas as metas atingidas' }[f];
+  $('pg').textContent = `@page{size:A4 ${land ? 'landscape' : 'portrait'};margin:8mm}`;
+  $('pl').innerHTML = `<table class="plt"><thead>
+    <tr><th class="plh" colspan="${r.metas.length + 3}">Indicador ${id} – ${cfg.t} · ${esc(r.unit)} · ${filtro} (${lista.length} de ${r.total}) · ${new Date().toLocaleDateString('pt-BR')} · ✓ atingida · ✗ não atingida${cfg.na ? ' · – não se aplica' : ''}</th></tr>
+    <tr><th>#</th><th class="pn">Nome</th><th><div class="vt"><b>Score</b></div></th>${r.metas.map(m => `<th><div class="vt"><b>${m.cols.join('+')}</b> ${esc(m.n)} (${m.p}pts)</div></th>`).join('')}</tr></thead>
+    <tbody>${lista.map((t, i) => `<tr><td>${i + 1}</td><td class="pn">${esc(t.nome)}</td><td><b>${t.score === null ? '—' : t.score}</b></td>${t.st.map(s => s.na ? '<td>–</td>' : s.ok ? '<td class="y">✓</td>' : '<td class="n">✗</td>').join('')}</tr>`).join('')}</tbody></table>`;
+  document.body.classList.add('pl-mode');
+  addEventListener('afterprint', () => document.body.classList.remove('pl-mode'), { once: true });
+  setTimeout(() => print(), 50);
+}
+
+/* ---- Relatorio Geral ---- */
+const GERAL = {};
+const nota = n => n > 75 ? ['Ótimo', 'ot', 'tot'] : n > 50 ? ['Bom', 'bm', 'tbm'] : n > 25 ? ['Suficiente', 'sf', 'tsf'] : ['Regular', 'rg', 'trg'];
+function viewGeral() {
+  for (const k in GERAL) delete GERAL[k];
+  $('app').innerHTML = `<div class="pr"><h1>RELATÓRIO GERAL DE DESEMPENHO</h1><b id="gP"></b></div><div class="top"><div><h1>Relatório Geral de Desempenho</h1><div class="unit" id="gU" hidden></div></div><a class="back" href="#menu">← Voltar ao Início</a></div>
+  <div class="gr">${Object.keys(IND).map(i => `<div class="c"><h4 style="margin:0 0 4px">Indicador ${i}</h4><div style="font-size:.85rem;color:var(--mu);margin-bottom:10px">${IND[i].t}</div><input type="file" id="g${i}" accept=".xlsx,.xls,.csv" style="max-width:100%"><div style="margin-top:8px"><span class="badge badge-na" id="s${i}">Aguardando planilha</span></div></div>`).join('')}</div>
+  <div style="text-align:center;margin-bottom:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn pri" id="gB">Processar Relatório Geral</button><button class="btn" id="gI">🖨 Imprimir Resultados e Pontos Críticos</button></div><div id="gR" hidden></div>`;
+  Object.keys(IND).forEach(i => $('g' + i).onchange = e => lerArquivo(e.target.files[0], rows => {
+    const r = analisar(rows, IND[i]);
+    if (!r.total || !r.metas.length) { alert(`Indicador ${i}: planilha sem dados válidos ou colunas não reconhecidas.\n\n` + r.iss.filter(x => x[0] === 'err').map(x => x[1]).join('\n')); return; }
+    GERAL[i] = { ...r, pior: r.metas.reduce((a, b) => b.pct < a.pct ? b : a) };
+    const nErr = r.iss.filter(x => x[0] === 'err').length;
+    $('s' + i).className = 'badge ' + (nErr ? 'badge-warning' : 'badge-success');
+    $('s' + i).textContent = nErr ? `Carregada com ${nErr} alerta(s) de coluna` : 'Planilha Carregada';
+  }));
+  $('gI').onclick = () => {
+    if ($('gR').hidden) return alert('Processe o Relatório Geral primeiro.');
+    $('gP').textContent = '🏢 ' + [...new Set(Object.values(GERAL).map(g => g.unit))].join(' / ') + ' · ' + new Date().toLocaleDateString('pt-BR');
+    $('pg').textContent = '@page{size:A4 portrait;margin:10mm}';
+    document.body.classList.add('gr-mode');
+    addEventListener('afterprint', () => document.body.classList.remove('gr-mode'), { once: true });
+    setTimeout(() => print(), 50);
+  };
+  $('gB').onclick = () => {
+    if (!Object.keys(GERAL).length) return alert('Faça o upload de pelo menos uma planilha antes de processar.');
+    const un = [...new Set(Object.values(GERAL).map(g => g.unit))]; $('gU').hidden = false; $('gU').textContent = '🏢 ' + un.join(' / ');
+    $('gR').hidden = false;
+    $('gR').innerHTML = `<div class="card"><h3 class="ct">Resultados por Indicador</h3><div class="gr">${Object.keys(IND).map(i => { const g = GERAL[i];
+      if (!g) return `<div class="c au"><h4 style="margin:0">Indicador ${i}</h4><small style="color:var(--mu)">${IND[i].t}</small><p class="tau" style="font-size:1.6rem;font-weight:700;margin:8px 0 0">Ausente</p><small>Sem dados</small></div>`;
+      const [rt, bd, tc] = nota(+g.media); return `<div class="c ${bd}"><h4 style="margin:0">Indicador ${i}</h4><small style="color:var(--mu)">${IND[i].t}</small><p class="${tc}" style="font-size:2rem;font-weight:700;margin:8px 0 0">${g.media} pts</p><b class="${tc}">${rt}</b></div>`; }).join('')}</div></div>
+    <div class="card"><h3 class="ct">Pontos Críticos e Planos de Ação</h3>${Object.keys(GERAL).map(i => { const g = GERAL[i], m = g.pior, [, , tc] = nota(+g.media);
+      return `<div class="fi"><div class="fh"><strong>Indicador ${i} - ${IND[i].t}</strong><span class="${tc}" style="font-weight:600">Média: ${g.media} pts</span></div>
+      <div style="background:#fff7ed;border:1px solid #fed7aa;padding:12px;border-radius:8px;margin-bottom:12px;font-size:.93rem">⚠️ <strong>Ponto Crítico de Atenção na Unidade:</strong> a meta <u>${m.n}</u> obteve o pior índice da planilha, com apenas <strong>${m.pct.toFixed(1)}%</strong> de aderência${m.na ? ` (entre ${m.ap} elegíveis)` : ''}.</div>
+      <div class="fg"><div class="fb negativo"><h5>Diagnóstico do Problema</h5><p>${m.neg}</p></div><div class="fb melhorar"><h5>Plano de Ação Sugerido</h5><p>${m.melh}</p></div></div></div>`; }).join('')}</div>`;
+    $('gR').scrollIntoView({ behavior: 'smooth' });
+  };
+}
+
+/* ============ ROTEADOR ============ */
+function rota() {
+  const h = location.hash.slice(1) || 'menu';
+  if (chart) { chart.destroy(); chart = null; }
+  const m = h.match(/^ind([2-7])$/);
+  if (m) viewInd(+m[1]); else if (h === 'geral') viewGeral(); else viewMenu();
+  scrollTo(0, 0);
+}
+addEventListener('hashchange', rota); rota();
+</script>
 </body>
 </html>
